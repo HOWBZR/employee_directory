@@ -1,37 +1,79 @@
 import React from 'react';
-import logo from './logo.svg';
+// import logo from './logo.svg';
 import './App.css';
 import api from "./utils/api"
+import EmployeeTable from './components/Employee_Table';
+
 
 class App extends React.Component {
- 
-  state = {employees:[]}
+
+  state = {
+    employees: [
+      { name: '' },
+      { email: '' },
+    ],
+    filteredEmployees: [],
+    sortedEmployees: []
+  }
+
+
+  listEmployees = () => {
+    api.getEmployeeInfo().then(res => {
+      const employeeList = res.data.results
+
+      const arr = []
+      employeeList.forEach(e => {
+        const firstName = e.name.first
+        const lastName = e.name.last
+        const fullName = firstName + ' ' + lastName
+        const emails = e.email
+        arr.push({
+          name: fullName,
+          email: emails
+        })
+      })
+      // console.log(arr)
+      this.setState({
+        employees: arr,
+        filteredEmployees: arr
+      })
+    })
+  }
+
+  handleChange = (e) => {
+    const filtered = e.target.value
+    const filteredEmployees = this.state.employees.filter(f => {
+      if (f.name.includes(filtered)) {
+        return f
+      }
+    })
+    this.setState({ filteredEmployees })
+  }
+
+  // sorted = (s) => {
+  //   const { sort } = 
+  // }
+
 
   componentDidMount() {
-    api.getEmployeeInfo().then(res => {
-      this.setState({ employees: res.data})
-    })
+    this.listEmployees()
   }
 
   render() {
 
-    return (
 
+    return (
       <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-        </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-        </a>
-        </header>
+        <form>
+          <label for="name">Search by name</label>
+          <input type="text" id="name" onChange={(e) => this.handleChange(e)}></input>
+        </form>
+          <p>Click the button to sort the table alphabetically, by name:</p>
+          <button>Sort</button>
+
+        <EmployeeTable
+          employees={this.state.filteredEmployees}
+        />
       </div>
     );
   }
